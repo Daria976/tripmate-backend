@@ -1,0 +1,42 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+    depends_on:
+      - web
+    networks:
+      - travel-net
+
+  web:
+    build: .
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    networks:
+      - travel-net
+
+  db:
+    image: mysql:8.4
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: travelDB
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - travel_db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - travel-net
+
+volumes:
+  travel_db_data:
+
+networks:
+  travel-net:
+    driver: bridge
